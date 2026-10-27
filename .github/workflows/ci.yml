@@ -1,0 +1,84 @@
+
+name: CI - Microservicios EP2
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  pruebas-productos:
+    name: Pruebas de Productos
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: productos
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: productos/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Iniciar microservicio
+        run: |
+          npm start > server.log 2>&1 &
+          for i in {1..20}; do
+            if curl -fsS http://localhost:3001/health; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat server.log
+          exit 1
+
+      - name: Ejecutar pruebas automatizadas
+        run: npm test
+
+  pruebas-inventario:
+    name: Pruebas de Inventario
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: inventario
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: inventario/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Iniciar microservicio
+        run: |
+          npm start > server.log 2>&1 &
+          for i in {1..20}; do
+            if curl -fsS http://localhost:3002/health; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat server.log
+          exit 1
+
+      - name: Ejecutar pruebas automatizadas
+        run: npm test

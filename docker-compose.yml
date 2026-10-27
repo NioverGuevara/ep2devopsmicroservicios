@@ -1,0 +1,23 @@
+
+services:
+  productos:
+    build:
+      context: ./productos
+    image: ep2-productos:1.0
+    container_name: ep2-productos
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+    restart: unless-stopped
+
+  inventario:
+    build:
+      context: ./inventario
+    image: ep2-inventario:1.0
+    container_name: ep2-inventario
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+    restart: unless-stopped
